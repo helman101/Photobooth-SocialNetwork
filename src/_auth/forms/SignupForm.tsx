@@ -4,6 +4,8 @@ import { useForm } from "react-hook-form";
 import { SignupValidation, SignupValidationType } from "../../lib/validation";
 import { Loader } from "../../components/shared/Loader";
 import { Link } from "react-router-dom";
+import { createUserAccount } from "../../lib/appwrite/api";
+import { Bounce, toast } from "react-toastify";
 
 const SignupForm = () => {
   const isLoading = false
@@ -13,7 +15,21 @@ const SignupForm = () => {
   });
 
   const onSubmit = async (data: SignupValidationType) => {
-    console.log(data)
+    const newUser = await createUserAccount(data)
+
+    if (!newUser) {
+      return toast.error('Sign up failed, please try again.', {
+        position: "top-right",
+        autoClose: 5000,
+        hideProgressBar: false,
+        closeOnClick: true,
+        pauseOnHover: true,
+        draggable: true,
+        progress: undefined,
+        theme: "light",
+        transition: Bounce
+      })
+    }
   };
 
   return (
