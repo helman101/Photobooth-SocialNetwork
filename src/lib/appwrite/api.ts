@@ -1,11 +1,11 @@
 import { ID } from "appwrite"
-import { INewUser } from "../../types"
+import { INewUser, IUserFromAccount } from "../../types"
 import { account, appwriteConfig, avatars, databases } from "./config"
 
 // Create user account
 export async function createUserAccount(user: INewUser) {
   try {
-    // Authenticate user information
+    // Create an account
     const newAccount = await account.create(
       ID.unique(),
       user.email,
@@ -33,14 +33,8 @@ export async function createUserAccount(user: INewUser) {
   }
 }
 
-// Add user to the Users database
-export async function saveUserToDB(user: {
-  accountId: string;
-  email: string;
-  name: string;
-  imageUrl: URL;
-  username?: string;
-}) {
+// Create user document on the Users database
+export async function saveUserToDB(user: IUserFromAccount) {
   try {
     const newUser = await databases.createDocument(
       appwriteConfig.databaseId,
