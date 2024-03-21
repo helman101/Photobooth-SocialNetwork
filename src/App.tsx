@@ -1,5 +1,5 @@
 import { Route, Routes } from 'react-router-dom'
-import { ToastContainer } from 'react-toastify'
+import { Bounce, ToastContainer } from 'react-toastify'
 
 import AuthLayout from './_auth/AuthLayout'
 import RootLayout from './_root/RootLayout'
@@ -24,7 +24,15 @@ export const App = () => {
           <Route index element={<Home />}/>
         </Route>
       </Routes>
-      <ToastContainer />
+      <ToastContainer
+        position='top-right'
+        autoClose={5000}
+        theme='light'
+        transition={Bounce}
+        draggable
+        pauseOnHover
+        closeOnClick
+      />
     </main>
   )
 }
