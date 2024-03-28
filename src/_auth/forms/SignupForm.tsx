@@ -3,14 +3,19 @@ import { Button, Form } from "react-bootstrap"
 import { useForm } from "react-hook-form";
 import { SignupValidation, SignupValidationType } from "../../lib/validation";
 import { Loader } from "../../components/shared/Loader";
-import { Link } from "react-router-dom";
-import { createUserAccount } from "../../lib/appwrite/api";
-import { Bounce, toast } from "react-toastify";
+import { Link, useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import { useCreateUserAccount, useSignInAccount } from "../../lib/react-query/queriesAndMutations";
+import { useUserContext } from "../../context/AuthContext";
 
 const SignupForm = () => {
-  const isLoading = false
+  const history = useNavigate();
+  const { checkAuthUser, isLoading: isUserLoading } = useUserContext();
 
-  const { register, handleSubmit, formState: { errors } } = useForm<SignupValidationType>({
+  const { mutateAsync: createUserAccount, isPending: isCreatingUser } = useCreateUserAccount();
+  const { mutateAsync: signInAccount, isPending: isSigninIn } = useSignInAccount();
+
+  const { register, handleSubmit, reset, formState: { errors } } = useForm<SignupValidationType>({
     resolver: yupResolver(SignupValidation)
   });
 
@@ -18,17 +23,25 @@ const SignupForm = () => {
     const newUser = await createUserAccount(data)
 
     if (!newUser) {
-      return toast.error('Sign up failed, please try again.', {
-        position: "top-right",
-        autoClose: 5000,
-        hideProgressBar: false,
-        closeOnClick: true,
-        pauseOnHover: true,
-        draggable: true,
-        progress: undefined,
-        theme: "light",
-        transition: Bounce
-      })
+      return toast.error('Sign up failed, please try again.')
+    }
+
+    const session = await signInAccount({
+      email: data.email,
+      password: data.password
+    })
+
+    if (!session) {
+      return toast.error('Sign in failed, please try again.')
+    }
+
+    const isLoggedIn = await checkAuthUser();
+
+    if (isLoggedIn) {
+      reset()
+      history('/')
+    } else {
+      toast.error('Sign up failed, please try again.')
     }
   };
 
@@ -69,7 +82,7 @@ const SignupForm = () => {
           )}
         </Form.Group>
         <Button variant="primary" type="submit" className="mt-2">
-          { isLoading ? (
+          { isCreatingUser ? (
             <Loader variant="white" />
           ) : 'Sign up'}
         </Button>
